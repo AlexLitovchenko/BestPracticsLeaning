@@ -1,0 +1,17 @@
+# Build the GO Binary.
+FROM golang:1.17 as build_sales-api
+ENV CGO_ENABLED 0
+ARG BUILD_REF
+# Copy the sourse code into the container
+COPY . /service
+# Build the service binary.
+WORKDIR /service 
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+ 
+# Run the GO Binary in Alpine.
+FROM alpine:3.14
+ARG BUILD_DATE
+ARG BUILD_REF
+COPY --from=build_sales-api /service /service/service
+WORKDIR /service
+CMD ["./service"]
